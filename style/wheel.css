@@ -1,0 +1,31 @@
+.wheel {
+	font-family: Verdana;
+	font-size: 10pt;
+	background-color: #EEEEEE;
+	border: 1px solid;
+	margin: .2em;
+	padding: .2em;
+	text-align: center;
+	width: 15em;
+}
+
+a.spin {
+	font-family: Verdana;
+	font-size: 10pt;
+}
+
+a.spin:link, a.spin:visited {
+	color: #999999;
+	text-decoration: none;
+}
+
+a.spin:hover {
+	color: #999999;
+	text-decoration: underline;
+}
+
+a.spin:active {
+	color: #000000;
+	text-decoration: underline;
+}
+

@@ -1,0 +1,37 @@
+<html>
+
+<head>
+<title>Trigonometry Performance Tests</title>
+<script type="text/javascript" src="script/wheel.math.js"></script>
+<script type="text/javascript" src="script/jquery-latest.js"></script>
+<script type="text/javascript">
+$(document).ready(function () {
+	var start = new Date(),
+		end,
+		numberOfRepititions = 100000,
+		conversionFactor = Math.PI / 180;
+
+	for(var i = 0; i < numberOfRepititions; i++) {
+		Math.sin((i % 360) * conversionFactor);
+	}
+
+	end = new Date();
+	console.log(end.getTime() - start.getTime());
+
+	start = new Date();
+
+	for(var i = 0; i < numberOfRepititions; i++) {
+		wheel.math.sine(i % 360);
+	}
+
+	end = new Date();
+	console.log(end.getTime() - start.getTime());
+});
+</script>
+</head>
+
+<body>
+</body>
+
+</html>
+
