@@ -1,54 +1,66 @@
-<html>
+<html class="no-js">
 
 <head>
 <title>wheel.js Example</title>
 <link rel="stylesheet" type="text/css" href="style/style.css" />
 <link rel="stylesheet" type="text/css" href="style/wheel.css" />
+<script type="text/javascript">
+document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
+</script>
 <script type="text/javascript" src="script/jquery-latest.js"></script>
 <script type="text/javascript" src="script/wheel.math.js"></script>
 <script type="text/javascript" src="script/wheel.js"></script>
 <script type="text/javascript">
 
-var initializer = {
-	wheel: function () {
-
+var page = {
+	init: function () {
+		window.wheel.initialize({
+			foreground: '#EEEEEE',
+			background: '#999999',
+			top: 100,
+			left: 100,
+			radius: 150,
+			pitch: 5,
+			yaw: 5,
+			items: [
+				{ Name: "Restaurant 1", Description: "Important information goes here.", Beer: true, Open: [true, true, true, true, true] },
+				{ Name: "Restaurant 2", Description: "Important information goes here.", Beer: true, Open: [false, true, true, true, true] },
+				{ Name: "Restaurant 3", Description: "Important information goes here.", Beer: true, Open: [false, true, true, true, true] },
+				{ Name: "Restaurant 4", Description: "Important information goes here.", Beer: true, Open: [true, true, true, true, true] },
+				{ Name: "Restaurant 5", Description: "Important information goes here.", Beer: true, Open: [true, true, true, true, true] },
+				{ Name: "Restaurant 6", Description: "Important information goes here.", Beer: true, Open: [true, true, true, true, true] },
+				{ Name: "Restaurant 7", Description: "Important information goes here.", Beer: false, Open: [true, true, true, true, true] },
+				{ Name: "Restaurant 8", Description: "Important information goes here.", Beer: false, Open: [true, true, true, true, true] },
+				{ Name: "Restaurant 9", Description: "Important information goes here.", Beer: true, Open: [true, true, true, true, true] },
+				{ Name: "Restaurant 10", Description: "Important information goes here.", Beer: true, Open: [true, true, true, true, true] }
+			],
+			displayProperty: "Name"
+		});
+	},
+	spin: function () {
+		$('#spinWheel').click(function () {
+			window.wheel.spin();
+		});
 	}
 };
 
-$(document).ready(function () {
-	var today = (new Date()).getDay() - 1;
-	
-	window.wheel.initialize({
-		foreground: '#EEEEEE',
-		background: '#999999',
-		top: 100,
-		left: 100,
-		radius: 150,
-		pitch: 5,
-		yaw: 5,
-		items: [
-			{ Name: "Restaurant 1", Description: "Important information goes here.", Beer: true, Open: [true, true, true, true, true] },
-			{ Name: "Restaurant 2", Description: "Important information goes here.", Beer: true, Open: [false, true, true, true, true] },
-			{ Name: "Restaurant 3", Description: "Important information goes here.", Beer: true, Open: [false, true, true, true, true] },
-			{ Name: "Restaurant 4", Description: "Important information goes here.", Beer: true, Open: [true, true, true, true, true] },
-			{ Name: "Restaurant 5", Description: "Important information goes here.", Beer: true, Open: [true, true, true, true, true] },
-			{ Name: "Restaurant 6", Description: "Important information goes here.", Beer: true, Open: [true, true, true, true, true] },
-			{ Name: "Restaurant 7", Description: "Important information goes here.", Beer: false, Open: [true, true, true, true, true] },
-			{ Name: "Restaurant 8", Description: "Important information goes here.", Beer: false, Open: [true, true, true, true, true] },
-			{ Name: "Restaurant 9", Description: "Important information goes here.", Beer: true, Open: [true, true, true, true, true] },
-			{ Name: "Restaurant 10", Description: "Important information goes here.", Beer: true, Open: [true, true, true, true, true] }
-		],
-		displayProperty: "Name"
-	});
-	
-	$('#spinWheel').click(function () {
-		window.wheel.spin();
-	});
-});
+(function (initializer, $, undefined) {
+	var initialize = function () {
+		var classes = $('body').attr('class').split(/\s+/);
+		$.each(classes, function (index, item) {
+			if(typeof(page[item]) === 'function') {
+				page[item]();
+			}
+		});
+	};
+	initializer.initialize = initialize;
+}(window.initializer = window.initializer || {}, jQuery));
+
+$(document).ready(window.initializer.initialize);
 </script>
 </head>
 
-<body>
+<body class="init spin">
 <a href="#" id="spinWheel" class="spin">Spin!</a>
 <div id="wheelCanvas"></div>
 </body>

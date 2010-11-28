@@ -1,0 +1,189 @@
+<html class="no-js">
+
+<head>
+<script type="text/javascript" src="script/jquery-latest.js"></script>
+<script type="text/javascript">
+
+if (!String.prototype.trim) {
+	String.prototype.trim = function () {
+		var str = this.replace(/\s\s*/, ''),
+			ws = /\s/,
+			i = str.length;
+		while (ws.test(str.charAt(--i)));
+		return str.slice(0, i + 1);
+	};
+}
+
+function object (o) {
+	function F () {}
+	F.prototype = o;
+	return new F();
+}
+
+var styleBase = {
+	toString: function () {
+		var str = '';
+		for (var property in this) {
+			if (this.hasOwnProperty(property)) {
+				str += property + ':' + this[property] + ';';
+			}
+		}
+		return str;
+	}
+};
+
+(function (slider, $, undefined) {
+	var sliderContainer,
+		slideBar,
+		minusButton,
+		plusButton,
+		current;
+	
+	var buildStyleObjectFromString = function (style) {
+		var that = {},
+			styles = style.split(/;/),
+			len = styles.length;
+		for (var i = 0; i < len; i++) {
+			var item = styles[i].trim();
+			if (item) {
+				var data = item.split(/:/),
+					property = data[0].trim(),
+					value = data[1].trim();
+				that[property] = value;
+			}
+		}
+		return that;
+	};
+	
+	var buildPropertyObject = function (property) {
+		var value = property.match(/^-?\d*\.?\d\d*/)[0];
+		var units = property.substring(value.length);
+		value *= 1;
+		return {
+			value: value,
+			units: units
+		};
+	};
+	
+	var initialize = function (sliderId) {
+		sliderContainer = $(sliderId);
+		slideBar = sliderContainer.find('.slide-bar');
+		minusButton = sliderContainer.find('.minus');
+
+		minusButton.click(function () {
+			var styles = buildStyleObjectFromString(slideBar.attr('style'));
+			var left = buildPropertyObject(styles.left);
+			if (left.value > 0) {
+				left.value -= .5;
+			}
+			styles.left = left.value + left.units;
+			slideBar.css(styles);
+		});
+
+		plusButton = sliderContainer.find('.plus');
+		plusButton.click(function () {
+			var styles = buildStyleObjectFromString(slideBar.attr('style'));
+			var left = buildPropertyObject(styles.left);
+			if (left.value < 19.5) {
+				left.value += .5;
+			}
+			styles.left = left.value + left.units;
+			slideBar.css(styles);
+		});
+	};
+	slider.initialize = initialize;
+}(window.slider = window.slider || {}, jQuery));
+
+$(document).ready(function () {
+	window.slider.initialize('.slider');
+});
+</script>
+<style type="text/css">
+.slider {
+	border: 1px solid #333333;
+	height: 1.5em;
+	width: 23em;
+	position: relative;
+}
+
+.slider .button {
+	cursor: pointer;
+	height: 1.5em;
+	line-height: 1.5em;
+	text-align: center;
+	text-decoration: none;
+	position: absolute;
+	width: 1.5em;
+}
+
+.slider .button:hover {
+	background-color: #CCCCCC;
+	cursor: pointer;
+	height: 1.5em;
+	line-height: 1.5em;
+	position: absolute;
+	text-align: center;
+	text-decoration: none;
+	width: 1.5em;
+}
+
+.slider .minus {
+	border-right: 1px solid #333333;
+	left: 0px;
+}
+
+.slider .plus {
+	border-left: 1px solid #333333;
+	right: 0px;
+}
+
+.slider .slide-line {
+	border-bottom: 1px solid #000000;
+	height: 50%;
+	left: 1.5em;
+	right: 1.5em;
+	position: absolute;
+}
+
+.slider .slide-bar-container {
+	height: 1.5em;
+	left: 1.5em;
+	right: 1.5em;
+	position: absolute;
+}
+
+.slider .slide-bar-container .slide-bar {
+	height: 100%;
+	padding-bottom: .1em;
+	padding-top: .1em;
+	position: absolute;
+	width: .5em;
+	z-index: 50;
+}
+
+.slider .slide-bar-container .slide-bar .slide-bar-graphic {
+	background-color: #FFFFFF;
+	border: 1px solid #333333;
+	height: 100%;
+	margin: 0px;
+	position: relative;
+	width: 100%;
+}
+</style>
+</head>
+
+<body>
+<div class="slider">
+	<a href="#" class="button minus">-</a>
+	<span class="slide-line"></span>
+	<span class="slide-bar-container">
+		<span class="slide-bar" style="left: 0em;">
+			<span class="slide-bar-graphic">&nbsp;</span>
+		</span>
+	</span>
+	<a href="#" class="button plus">+</a>
+</div>
+</body>
+
+</html>
+
