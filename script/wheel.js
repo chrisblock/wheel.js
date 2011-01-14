@@ -14,18 +14,20 @@
 		cosine = wheel.math.cosine,
 		canvas,
 		panelWidth = 200,
-		yaw,
-		pitch,
-		radius,
-		rotation = 0,
-		centerOfWheelX,
-		centerOfWheelY,
+        wheelGeometry = {
+            radius: 0,
+            rotation: 0,
+            x: 0,
+            y: 0,
+            pitch: 0,
+            yaw: 0
+        },
 		foreground,
 		background;
 	
 	var getDisplayString = function (item) {
 		var str = item;
-		if (displayProperty !== undefined) {
+		if (displayProperty) {
 			str = item[displayProperty];
 		}
 		return str;
@@ -33,15 +35,18 @@
 	
 	var buildHtmlItem = function (item) {
 		var domElement = $('<div />').addClass('wheel');
-		domElement.text(getDisplayString(item));
-		return domElement;
+
+        domElement.text(getDisplayString(item));
+
+        return domElement;
 	};
 	
 	var filterItems = function () {
 		htmlItems = [];
 		var numItems = rawItems.length,
 			numFilters = filters.length;
-		for (var i = 0; i < numItems; i++) {
+
+        for (var i = 0; i < numItems; i++) {
 			var matched = true,
 				item = rawItems[i];
 			for (var j = 0; j < numFilters; j++) {
@@ -52,23 +57,17 @@
 				htmlItems.push(htmlItem);
 			}
 		}
-		return htmlItems;
+
+        return htmlItems;
 	};
 
 	var buildRgbObject = function (color) {
-		if(!!color.match(/#[\dA-F]{6}/i)) {
-			var redString = color.substring(1, 3);
-			var red = parseInt(redString, 16);
-
-			var greenString = color.substring(3, 5);
-			var green = parseInt(greenString, 16);
-
-			var blueString = color.substring(5, 7);
-			var blue = parseInt(blueString, 16);
+        var result = color.match(/#([\dA-F]{2})([\dA-F]{2})([\dA-F]{2})/i);
+		if(!!result) {
 			return {
-				r: red,
-				g: green,
-				b: blue
+				r: parseInt(result[1], 16),
+				g: parseInt(result[2], 16),
+				b: parseInt(result[3], 16)
 			};
 		}
 	};
@@ -102,28 +101,28 @@
 	};
 	
 	var getBackgroundColor = function (zIndex) {
-		var percent = (1 - zIndex / (2 * radius));
+		var percent = (1 - zIndex / (2 * wheelGeometry.radius));
 		var color = getColorShade(foreground, background, percent);
 		return getColorString(color);
 	};
 	
 	var draw = function () {
-		var sineYaw = sine(yaw),
-			sinePitch = sine(pitch),
+		var sineYaw = sine(wheelGeometry.yaw),
+			sinePitch = sine(wheelGeometry.pitch),
 			numHtmlItems = htmlItems.length;
+        
 		for (var i = 0; i < numHtmlItems; i++) {
-			var currentAngle = Math.floor(rotation + angleOffset[i]) % 360;
-			
-			var cosCurrentAngleTimesRadius = radius * cosine(currentAngle);
-			
-			var zIndex = radius + Math.floor(cosCurrentAngleTimesRadius);
-			var horizontalSkewOffset = Math.floor(cosCurrentAngleTimesRadius * sineYaw);
-			var verticalSkewOffset = Math.floor(cosCurrentAngleTimesRadius * sinePitch);
-			var x = centerOfWheelX - horizontalSkewOffset;
-			var y = centerOfWheelY + verticalSkewOffset - Math.floor(radius * sine(currentAngle));
-			var style = 'position:absolute;top:' + y + 'px;left:' + x + 'px;z-index:' + zIndex + ';';
-			var bgColor = getBackgroundColor(zIndex);
-			style += 'background-color:' + bgColor + ';';
+			var currentAngle = Math.floor(wheelGeometry.rotation + angleOffset[i]) % 360,
+                cosCurrentAngleTimesRadius = wheelGeometry.radius * cosine(currentAngle),
+                zIndex = wheelGeometry.radius + Math.floor(cosCurrentAngleTimesRadius),
+                horizontalSkewOffset = Math.floor(cosCurrentAngleTimesRadius * sineYaw),
+                verticalSkewOffset = Math.floor(cosCurrentAngleTimesRadius * sinePitch),
+                x = wheelGeometry.x - horizontalSkewOffset,
+                y = wheelGeometry.y + verticalSkewOffset - Math.floor(wheelGeometry.radius * sine(currentAngle)),
+                style = 'position: absolute; top: ' + y + 'px; left: ' + x + 'px; z-index: ' + zIndex + ';',
+                bgColor = getBackgroundColor(zIndex);
+
+            style += 'background-color: ' + bgColor + ';';
 			var item = htmlItems[i];
 			item.attr('style', style);
 		}
@@ -153,7 +152,7 @@
 	
 	var randomize = function () {
 		selectedIndex = Math.floor(Math.random() * htmlItems.length);
-		rotation = Math.floor(selectedIndex * angleBetweenItems);
+		wheelGeometry.rotation = Math.floor(selectedIndex * angleBetweenItems);
 	};
 	
 	var calculateAngles = function () {
@@ -163,7 +162,7 @@
 			angleOffset[i] = i * angleBetweenItems;
 		}
 	};
-	
+
 	var initialize = function (config) {
 		if (!config) {
 			throw('No configuration specified.');
@@ -171,38 +170,40 @@
 		else if (config.items === undefined) {
 			throw('No items to populate the wheel with.');
 		}
-		radius = config.radius || (3 / 4 * panelWidth);
-		centerOfWheelX = (config.left || 100) + radius;
-		centerOfWheelY = (config.top || 100) + radius;
-		pitch = config.pitch || 5;
-		yaw = config.yaw || 5;
+
+		wheelGeometry.radius = config.radius || (3 / 4 * panelWidth);
+		wheelGeometry.x = (config.left || 100) + wheelGeometry.radius;
+		wheelGeometry.y = (config.top || 100) + wheelGeometry.radius;
+		wheelGeometry.pitch = config.pitch || 5;
+		wheelGeometry.yaw = config.yaw || 5;
+
 		setDisplayProperty(config.displayProperty || 'value');
-		
-                foreground = buildRgbObject(config.foreground || '#EEEEEE');
-                background = buildRgbObject(config.background || '#999999');
-		
+
+        foreground = buildRgbObject(config.foreground || '#EEEEEE');
+        background = buildRgbObject(config.background || '#999999');
+
 		setItems(config.items);
 		setFilters(config.filters || []);
-		
+
 		calculateAngles();
-		
+
 		initializeCanvas();
-		
+
 		randomize();
-		
+
 		draw();
 	};
 	wheel.initialize = initialize;
-	
+
 	var rotate = function () {
-		rotation++;
-		rotation %= 360;
+		wheelGeometry.rotation++;
+		wheelGeometry.rotation %= 360;
 		draw();
 		currentShift++;
 		setTimeout(rotate, minShiftDelay + Math.floor((maxShiftDelay - minShiftDelay) * Math.pow(currentShift / numberOfShifts, 2)));
 	};
 	wheel.rotate = rotate;
-	
+
 	var spin = function () {
 		numberOfShifts = (3 * htmlItems.length) + Math.floor(2 * Math.random() * htmlItems.length);
 		numberOfShifts *= angleBetweenItems;

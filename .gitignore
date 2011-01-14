@@ -17,3 +17,5 @@ Icon?
 .*.sw[a-z]
 *.un~
 
+#webstorm
+.idea
