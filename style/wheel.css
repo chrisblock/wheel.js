@@ -1,5 +1,5 @@
 .wheel {
-	font-family: Verdana;
+	font-family: Verdana, sans-serif;
 	font-size: 10pt;
 	background-color: #EEEEEE;
 	border: 1px solid;
@@ -10,7 +10,7 @@
 }
 
 a.spin {
-	font-family: Verdana;
+	font-family: Verdana, sans-serif;
 	font-size: 10pt;
 }
 
@@ -29,3 +29,8 @@ a.spin:active {
 	text-decoration: underline;
 }
 
+.selection-indicator {
+    font-weight: bold;
+    margin: .2em;
+    padding: .2em;
+}

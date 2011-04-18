@@ -24,7 +24,7 @@ var styleBase = {
 	toString: function () {
 		var str = '';
 		for (var property in this) {
-			if (this.hasOwnProperty(property)) {
+			if (this.hasOwnProperty(property) && (typeof(this[property]) !== 'function')) {
 				str += property + ':' + this[property] + ';';
 			}
 		}
@@ -56,9 +56,9 @@ var styleBase = {
 	};
 	
 	var buildPropertyObject = function (property) {
-		var value = property.match(/^-?\d*\.?\d\d*/)[0];
-		var units = property.substring(value.length);
-		value *= 1;
+		var value = Number(property.match(/^-?\d*\.?\d\d*/)[0]),
+            units = property.substring(value.length);
+
 		return {
 			value: value,
 			units: units
@@ -71,22 +71,26 @@ var styleBase = {
 		minusButton = sliderContainer.find('.minus');
 
 		minusButton.click(function () {
-			var styles = buildStyleObjectFromString(slideBar.attr('style'));
-			var left = buildPropertyObject(styles.left);
+			var styles = buildStyleObjectFromString(slideBar.attr('style')),
+                left = buildPropertyObject(styles.left);
+            
 			if (left.value > 0) {
 				left.value -= .5;
 			}
+
 			styles.left = left.value + left.units;
 			slideBar.css(styles);
 		});
 
 		plusButton = sliderContainer.find('.plus');
 		plusButton.click(function () {
-			var styles = buildStyleObjectFromString(slideBar.attr('style'));
-			var left = buildPropertyObject(styles.left);
+			var styles = buildStyleObjectFromString(slideBar.attr('style')),
+                left = buildPropertyObject(styles.left);
+            
 			if (left.value < 19.5) {
 				left.value += .5;
 			}
+            
 			styles.left = left.value + left.units;
 			slideBar.css(styles);
 		});

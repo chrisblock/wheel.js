@@ -81,8 +81,9 @@
 	};
 
 	var padColor = function(color) {
-		var leadingZeroes = '00';
-		var colorString = color.toString(16);
+		var leadingZeroes = '00',
+            colorString = color.toString(16);
+        
 		return leadingZeroes.substring(0, leadingZeroes.length - colorString.length) + colorString;
 	};
 
@@ -95,14 +96,16 @@
 	};
 
 	var getColorComponentShade = function (fg, bg, p) {
-		var diff = (bg - fg) * p;
-		var shade = Math.floor(fg + diff);
+		var diff = (bg - fg) * p,
+            shade = Math.floor(fg + diff);
+
 		return shade;
 	};
 	
 	var getBackgroundColor = function (zIndex) {
-		var percent = (1 - zIndex / (2 * wheelGeometry.radius));
-		var color = getColorShade(foreground, background, percent);
+		var percent = (1 - zIndex / (2 * wheelGeometry.radius)),
+            color = getColorShade(foreground, background, percent);
+        
 		return getColorString(color);
 	};
 	
@@ -119,12 +122,10 @@
                 verticalSkewOffset = Math.floor(cosCurrentAngleTimesRadius * sinePitch),
                 x = wheelGeometry.x - horizontalSkewOffset,
                 y = wheelGeometry.y + verticalSkewOffset - Math.floor(wheelGeometry.radius * sine(currentAngle)),
-                style = 'position: absolute; top: ' + y + 'px; left: ' + x + 'px; z-index: ' + zIndex + ';',
-                bgColor = getBackgroundColor(zIndex);
+                bgColor = getBackgroundColor(zIndex),
+                style = 'position: absolute; top: ' + y + 'px; left: ' + x + 'px; z-index: ' + zIndex + ';background-color: ' + bgColor + ';';
 
-            style += 'background-color: ' + bgColor + ';';
-			var item = htmlItems[i];
-			item.attr('style', style);
+            htmlItems[i].attr('style', style);
 		}
 	};
 	
@@ -156,19 +157,43 @@
 	};
 	
 	var calculateAngles = function () {
-		var numberOfItems = htmlItems.length;
+		var numberOfItems = htmlItems.length,
+            i;
+
 		angleBetweenItems = 360 / numberOfItems;
-		for (var i = 0; i < numberOfItems; i++) {
+        
+		for (i = 0; i < numberOfItems; i++) {
 			angleOffset[i] = i * angleBetweenItems;
 		}
 	};
 
+    var renderSelectionIndicator = function () {
+        var selectionIndicator = $('<span class="selection-indicator">&rarr;<\/span>').appendTo(canvas),
+            sineYaw = sine(wheelGeometry.yaw),
+			sinePitch = sine(wheelGeometry.pitch),
+            cosCurrentAngleTimesRadius = wheelGeometry.radius * cosine(0),
+            zIndex = wheelGeometry.radius + Math.floor(cosCurrentAngleTimesRadius),
+            horizontalSkewOffset = Math.floor(cosCurrentAngleTimesRadius * sineYaw),
+            verticalSkewOffset = Math.floor(cosCurrentAngleTimesRadius * sinePitch),
+            x = wheelGeometry.x - horizontalSkewOffset - selectionIndicator.outerWidth(),
+            y = wheelGeometry.y + verticalSkewOffset - Math.floor(wheelGeometry.radius * sine(0)),
+            style = 'position: absolute; top: ' + y + 'px; left: ' + x + 'px; z-index: ' + zIndex + ';';
+
+        selectionIndicator.attr('style', style);
+    };
+
 	var initialize = function (config) {
 		if (!config) {
-			throw('No configuration specified.');
+			throw ({
+                name: 'ConfigurationException',
+                message: 'No configuration specified.'
+            });
 		}
 		else if (config.items === undefined) {
-			throw('No items to populate the wheel with.');
+			throw ({
+                name: 'ConfigurationException',
+                message: 'No items to populate the wheel with.'
+            });
 		}
 
 		wheelGeometry.radius = config.radius || (3 / 4 * panelWidth);
@@ -187,11 +212,11 @@
 
 		calculateAngles();
 
-		initializeCanvas();
-
 		randomize();
 
-		draw();
+        initializeCanvas();
+
+		renderSelectionIndicator();
 	};
 	wheel.initialize = initialize;
 
@@ -200,9 +225,14 @@
 		wheelGeometry.rotation %= 360;
 		draw();
 		currentShift++;
-		setTimeout(rotate, minShiftDelay + Math.floor((maxShiftDelay - minShiftDelay) * Math.pow(currentShift / numberOfShifts, 2)));
+
+        if (currentShift < numberOfShifts) {
+		    setTimeout(rotate, minShiftDelay + Math.floor((maxShiftDelay - minShiftDelay) * Math.pow(currentShift / numberOfShifts, 2)));
+        }
+        else {
+            // print details of the selected item
+        }
 	};
-	wheel.rotate = rotate;
 
 	var spin = function () {
 		numberOfShifts = (3 * htmlItems.length) + Math.floor(2 * Math.random() * htmlItems.length);
