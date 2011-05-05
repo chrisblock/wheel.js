@@ -23,7 +23,8 @@
             yaw: 0
         },
 		foreground,
-		background;
+		background,
+        styleCache = {};
 	
 	var getDisplayString = function (item) {
 		var str = item;
@@ -42,16 +43,21 @@
 	};
 	
 	var filterItems = function () {
-		htmlItems = [];
 		var numItems = rawItems.length,
-			numFilters = filters.length;
+			numFilters = filters.length,
+            i,
+            j;
 
-        for (var i = 0; i < numItems; i++) {
+        htmlItems = [];
+
+        for (i = 0; i < numItems; i++) {
 			var matched = true,
 				item = rawItems[i];
-			for (var j = 0; j < numFilters; j++) {
+            
+			for (j = 0; j < numFilters; j++) {
 				matched = matched && filters[j](item);
 			}
+
 			if (matched) {
 				var htmlItem = buildHtmlItem(item);
 				htmlItems.push(htmlItem);
@@ -108,24 +114,42 @@
         
 		return getColorString(color);
 	};
-	
-	var draw = function () {
-		var sineYaw = sine(wheelGeometry.yaw),
-			sinePitch = sine(wheelGeometry.pitch),
-			numHtmlItems = htmlItems.length;
-        
-		for (var i = 0; i < numHtmlItems; i++) {
-			var currentAngle = Math.floor(wheelGeometry.rotation + angleOffset[i]) % 360,
-                cosCurrentAngleTimesRadius = wheelGeometry.radius * cosine(currentAngle),
+
+    var computeStyleForPosition = function (position) {
+        if (!styleCache[position]) {
+            var sineYaw = sine(wheelGeometry.yaw),
+			    sinePitch = sine(wheelGeometry.pitch),
+                cosCurrentAngleTimesRadius = wheelGeometry.radius * cosine(position),
                 zIndex = wheelGeometry.radius + Math.floor(cosCurrentAngleTimesRadius),
                 horizontalSkewOffset = Math.floor(cosCurrentAngleTimesRadius * sineYaw),
                 verticalSkewOffset = Math.floor(cosCurrentAngleTimesRadius * sinePitch),
                 x = wheelGeometry.x - horizontalSkewOffset,
-                y = wheelGeometry.y + verticalSkewOffset - Math.floor(wheelGeometry.radius * sine(currentAngle)),
-                bgColor = getBackgroundColor(zIndex),
-                style = 'position: absolute; top: ' + y + 'px; left: ' + x + 'px; z-index: ' + zIndex + ';background-color: ' + bgColor + ';';
+                y = wheelGeometry.y + verticalSkewOffset - Math.floor(wheelGeometry.radius * sine(position)),
+                bgColor = getBackgroundColor(zIndex);
 
-            htmlItems[i].attr('style', style);
+            styleCache[position] = {
+                position: 'absolute',
+                top: y + 'px',
+                left: x + 'px',
+                zIndex: zIndex,
+                backgroundColor: bgColor
+            };
+        }
+
+        return styleCache[position];
+    };
+	
+	var draw = function () {
+        var currentAngle,
+            style,
+            numHtmlItems = htmlItems.length,
+            i;
+
+		for (i = 0; i < numHtmlItems; i++) {
+			currentAngle = Math.floor(wheelGeometry.rotation + angleOffset[i]) % 360;
+            style = computeStyleForPosition(currentAngle);
+
+            htmlItems[i].css(style);
 		}
 	};
 	
@@ -177,9 +201,14 @@
             verticalSkewOffset = Math.floor(cosCurrentAngleTimesRadius * sinePitch),
             x = wheelGeometry.x - horizontalSkewOffset - selectionIndicator.outerWidth(),
             y = wheelGeometry.y + verticalSkewOffset - Math.floor(wheelGeometry.radius * sine(0)),
-            style = 'position: absolute; top: ' + y + 'px; left: ' + x + 'px; z-index: ' + zIndex + ';';
+            style = {
+                position: 'absolute',
+                top: y + 'px',
+                left: x + 'px',
+                zIndex: zIndex
+            };
 
-        selectionIndicator.attr('style', style);
+        selectionIndicator.css(style);
     };
 
 	var initialize = function (config) {
