@@ -11,14 +11,13 @@
 		numberOfShifts,
 		minShiftDelay = 5,
 		maxShiftDelay = 50,
-		sine = wheel.math.sine,
-		cosine = wheel.math.cosine,
 		canvas,
 		panelWidth = 200,
         wheelGeometry,
 		foreground,
 		background,
-        styleCache = {};
+        styleCache = {},
+        conversionConstant = Math.PI / 180;
 
     var getDisplayableItems = function () {
         if (!htmlItems || !htmlItems.length) {
@@ -125,14 +124,15 @@
 
     var computeStyleForPosition = function (position) {
         if (!styleCache[position]) {
-            var sineYaw = sine(wheelGeometry.yaw),
-			    sinePitch = sine(wheelGeometry.pitch),
-                cosCurrentAngleTimesRadius = wheelGeometry.radius * cosine(position),
+            var angleInRadians = position * conversionConstant,
+                sineYaw = Math.sin(wheelGeometry.yaw),
+			    sinePitch = Math.sin(wheelGeometry.pitch),
+                cosCurrentAngleTimesRadius = wheelGeometry.radius * Math.cos(angleInRadians),
                 zIndex = wheelGeometry.radius + Math.floor(cosCurrentAngleTimesRadius),
                 horizontalSkewOffset = Math.floor(cosCurrentAngleTimesRadius * sineYaw),
                 verticalSkewOffset = Math.floor(cosCurrentAngleTimesRadius * sinePitch),
                 x = wheelGeometry.x - horizontalSkewOffset,
-                y = wheelGeometry.y + verticalSkewOffset - Math.floor(wheelGeometry.radius * sine(position)),
+                y = wheelGeometry.y + verticalSkewOffset - Math.floor(wheelGeometry.radius * Math.sin(angleInRadians)),
                 bgColor = getBackgroundColor(zIndex);
 
             styleCache[position] = {
@@ -202,10 +202,11 @@
 
     var renderSelectionIndicator = function () {
         var selectionIndicator = $('<span class="selection-indicator">&rarr;<\/span>').appendTo(canvas),
-            style = computeStyleForPosition(0);
+            style = $.extend({}, computeStyleForPosition(0)),
+            left = style.left;
 
         delete style.backgroundColor;
-        style.left -= selectionIndicator.outerWidth();
+        style.left = (+left.slice(0, left.length - 2) - selectionIndicator.outerWidth()) + 'px';
 
         selectionIndicator.css(style);
     };
@@ -231,8 +232,8 @@
             radius: radius,
             x: (config.left || 100) + radius,
             y: (config.top || 100) + radius,
-            pitch: config.pitch || 5,
-            yaw: config.yaw || 5
+            pitch: (config.pitch || 5) * conversionConstant,
+            yaw: (config.yaw || 5) * conversionConstant
         };
 
 		setDisplayProperty(config.display || 'value');
@@ -276,5 +277,16 @@
 		rotate();
 	};
 	wheel.spin = spin;
+
+    var redraw = function () {
+        calculateAnglesBetweenItems();
+
+        randomizeInitialSelection();
+
+        initializeCanvas();
+
+		renderSelectionIndicator();
+    };
+    wheel.redraw = redraw;
 }(window.wheel = window.wheel || {}, jQuery));
 
