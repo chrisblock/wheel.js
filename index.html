@@ -13,8 +13,8 @@ document.documentElement.className = document.documentElement.className.replace(
 var page = {
 	init: function () {
 		window.wheel.initialize({
-			foreground: '#EEEEEE',
-			background: '#999999',
+			foreground: "#EEEEEE",
+			background: "#999999",
 			top: 100,
 			left: 100,
 			radius: 150,
@@ -47,7 +47,12 @@ var page = {
 		$('#spinWheel').click(function () {
 			window.wheel.spin();
 		});
-	}
+	},
+    stop: function () {
+        $('#stopWheel').click(function () {
+            window.wheel.stop();
+        });
+    }
 };
 
 (function (initializer, $, undefined) {
@@ -66,8 +71,9 @@ $(document).ready(window.initializer.initialize);
 </script>
 </head>
 
-<body class="init spin">
+<body class="init spin stop">
 <a href="#" id="spinWheel" class="spin">Spin!</a>
+<a href="#" id="stopWheel" class="spin">Stop.</a>
 <div id="wheelCanvas"></div>
 </body>
 

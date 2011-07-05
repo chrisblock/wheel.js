@@ -11,6 +11,7 @@
 		numberOfShifts,
 		minShiftDelay = 5,
 		maxShiftDelay = 50,
+        rotateTimeout,
 		canvas,
 		panelWidth = 200,
         wheelGeometry,
@@ -53,20 +54,23 @@
 		var numItems = rawItems.length,
 			numFilters = filters.length,
             i,
-            j;
+            matched,
+            item,
+            j,
+            htmlItem;
 
         htmlItems.splice(0, htmlItems.length);
 
         for (i = 0; i < numItems; i++) {
-			var matched = true,
-				item = rawItems[i];
+			matched = true;
+		    item = rawItems[i];
             
 			for (j = 0; j < numFilters; j++) {
 				matched = matched && filters[j].call(null, item);
 			}
 
 			if (matched) {
-				var htmlItem = buildHtmlItem(item);
+				htmlItem = buildHtmlItem(item);
 				htmlItems.push(htmlItem);
 			}
 		}
@@ -97,7 +101,7 @@
 		var leadingZeroes = '00',
             colorString = color.toString(16);
         
-		return leadingZeroes.substring(0, leadingZeroes.length - colorString.length) + colorString;
+		return leadingZeroes.slice(0, leadingZeroes.length - colorString.length) + colorString;
 	};
 
 	var getColorString = function (rgb) {
@@ -116,7 +120,7 @@
 	};
 	
 	var getBackgroundColor = function (zIndex) {
-		var percent = (1 - zIndex / (2 * wheelGeometry.radius)),
+		var percent = (1 - (zIndex / (2 * wheelGeometry.radius))),
             color = getColorShade(foreground, background, percent);
         
 		return getColorString(color);
@@ -163,11 +167,13 @@
 	};
 	
 	var initializeCanvas = function () {
-        var htmlItems = getDisplayableItems();
+        var htmlItems = getDisplayableItems(),
+            numHtmlItems,
+            i;
 		canvas = $('#wheelCanvas');
 		draw();
-		var numHtmlItems = htmlItems.length;
-		for (var i = 0; i < numHtmlItems; i++) {
+		numHtmlItems = htmlItems.length;
+		for (i = 0; i < numHtmlItems; i++) {
 			canvas.append(htmlItems[i]);
 		}
 	};
@@ -261,10 +267,11 @@
 		currentShift++;
 
         if (currentShift < numberOfShifts) {
-		    setTimeout(rotate, minShiftDelay + Math.floor((maxShiftDelay - minShiftDelay) * Math.pow(currentShift / numberOfShifts, 2)));
+		    rotateTimeout = setTimeout(rotate, minShiftDelay + Math.floor((maxShiftDelay - minShiftDelay) * Math.pow(currentShift / numberOfShifts, 2)));
         }
         else {
-            // print details of the selected item
+            rotateTimeout = undefined;
+            // TODO: print details of the selected item
         }
 	};
 
@@ -277,6 +284,24 @@
 		rotate();
 	};
 	wheel.spin = spin;
+
+    var stop = function () {
+        if (rotateTimeout) {
+            clearTimeout(rotateTimeout);
+            rotateTimeout = undefined;
+        }
+    };
+    wheel.stop = stop;
+
+    var reset = function () {
+        stop();
+
+        wheelGeometry.rotation = 0;
+        currentShift = 0;
+
+        draw();
+    };
+    wheel.reset = reset;
 
     var redraw = function () {
         calculateAnglesBetweenItems();
